@@ -12,19 +12,36 @@ docker compose version >/dev/null 2>&1 || {
 
 mkdir -p "${INSTALL_DIR}"
 
-cat >"${INSTALL_DIR}/config.yaml" <<'YAML'
-model_list:
-  - model_name: "ollama/*"
-    litellm_params:
-      model: "ollama/*"
-      api_base: os.environ/OLLAMA_API_BASE
-      input_cost_per_token: 0
-      output_cost_per_token: 0
+if ! command -v ollama >/dev/null 2>&1; then
+  echo "Erro: Ollama não foi encontrado neste PC." >&2
+  exit 1
+fi
+
+MODEL_NAMES="$(ollama list | awk 'NR > 1 && $1 != "" { print $1 }')"
+if [ -z "${MODEL_NAMES}" ]; then
+  echo "Erro: nenhum modelo instalado no Ollama. Use: ollama pull <modelo>" >&2
+  exit 1
+fi
+
+{
+  echo "model_list:"
+  while IFS= read -r model; do
+    printf '  - model_name: "%s"\n' "${model}"
+    printf '    litellm_params:\n'
+    printf '      model: "ollama/%s"\n' "${model}"
+    printf '      api_base: os.environ/OLLAMA_API_BASE\n'
+    printf '      input_cost_per_token: 0\n'
+    printf '      output_cost_per_token: 0\n'
+  done <<MODELS
+${MODEL_NAMES}
+MODELS
+  cat <<'YAML'
 general_settings:
   master_key: os.environ/LITELLM_MASTER_KEY
 litellm_settings:
   drop_params: true
 YAML
+} >"${INSTALL_DIR}/config.yaml"
 
 cat >"${INSTALL_DIR}/docker-compose.yml" <<'YAML'
 services:

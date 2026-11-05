@@ -1,9 +1,8 @@
 model_list:
-  # Rota curinga: o nome pedido pelo cliente vira o modelo do Ollama.
-  # Exemplo: "llama3.2" -> "ollama/llama3.2".
-  - model_name: "ollama/*"
+  # O instalador gera uma entrada como esta para cada modelo de `ollama list`.
+  - model_name: "llama3.2:3b"
     litellm_params:
-      model: "ollama/*"
+      model: "ollama/llama3.2:3b"
       api_base: os.environ/OLLAMA_API_BASE
       input_cost_per_token: 0
       output_cost_per_token: 0
