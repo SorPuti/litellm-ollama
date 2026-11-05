@@ -22,6 +22,7 @@ if [ -z "${MODEL_NAMES}" ]; then
   echo "Erro: nenhum modelo instalado no Ollama. Use: ollama pull <modelo>" >&2
   exit 1
 fi
+FIRST_MODEL="${MODEL_NAMES%%$'\n'*}"
 
 {
   echo "model_list:"
@@ -66,7 +67,7 @@ LITELLM_MASTER_KEY=${MASTER_KEY}
 ENV
 
 echo "Instalando LiteLLM local em ${INSTALL_DIR}..."
-(cd "${INSTALL_DIR}" && docker compose up -d)
+(cd "${INSTALL_DIR}" && docker compose up -d --force-recreate)
 
 configure_opencode() {
   local config="${HOME}/.config/opencode/opencode.json"
@@ -134,24 +135,10 @@ Teste:
   curl http://localhost:4000/v1/chat/completions \\
     -H 'Authorization: Bearer ${MASTER_KEY}' \\
     -H 'Content-Type: application/json' \\
-    -d '{"model":"llama3.2","messages":[{"role":"user","content":"oi"}]}'
+    -d '{"model":"${FIRST_MODEL}","messages":[{"role":"user","content":"oi"}]}'
 
 O OpenCode foi configurado automaticamente com os modelos instalados.
-Use `/models` e selecione `litellm-local/<nome-do-modelo>`:
-
-  {
-    "provider": {
-      "litellm-local": {
-        "package": "@opencode/ai/providers/openai-compatible",
-        "name": "LiteLLM + Ollama (local)",
-        "settings": {
-          "baseURL": "http://127.0.0.1:4000/v1",
-          "apiKey": "${MASTER_KEY}"
-        },
-        "models": {"llama3.2": {"name": "Llama 3.2"}}
-      }
-    }
-  }
+Use /models e selecione litellm-local/<nome-do-modelo>.
 
 Arquivos: ${INSTALL_DIR}
 Parar:   (cd "${INSTALL_DIR}" && docker compose down)
