@@ -1,0 +1,19 @@
+services:
+  litellm:
+    image: docker.litellm.ai/berriai/litellm:latest
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:4000:4000"
+    environment:
+      LITELLM_MASTER_KEY: ${LITELLM_MASTER_KEY:-sk-local-dev-change-me}
+      OLLAMA_API_BASE: ${OLLAMA_API_BASE:-http://host.docker.internal:11434}
+      LITELLM_OFFLINE_MODE: ${LITELLM_OFFLINE_MODE:-true}
+    volumes:
+      - ./config.yaml:/app/config.yaml:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command:
+      - "--config"
+      - "/app/config.yaml"
+      - "--port"
+      - "4000"
